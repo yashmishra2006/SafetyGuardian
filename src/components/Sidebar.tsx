@@ -10,55 +10,80 @@ import {
   Radio,
   AlertTriangle,
   Shield,
-  Home
+  Home,
+  Users
 } from 'lucide-react';
 import { cn } from '../utils/cn';
 import { AnalysisType } from '../types';
 
 interface SidebarProps {
   activeAnalyzer: AnalysisType | null;
-  setActiveAnalyzer: (type: AnalysisType | null) => void;
+  setActiveAnalyzer: (type: AnalysisType | null, showTeam?: boolean) => void;
   isSidebarOpen: boolean;
   setIsSidebarOpen: (isOpen: boolean) => void;
+  showTeam: boolean;
+  setShowTeam: (show: boolean) => void;
+  onEmergencySupport: () => void;
 }
 
-const Sidebar: React.FC<SidebarProps> = ({ 
+export const Sidebar: React.FC<SidebarProps> = ({ 
   activeAnalyzer, 
   setActiveAnalyzer,
   isSidebarOpen,
-  setIsSidebarOpen
+  setIsSidebarOpen,
+  showTeam,
+  setShowTeam,
+  onEmergencySupport
 }) => {
   const sidebarItems = [
     { 
       type: null,
       label: 'Home',
-      icon: <Home size={20} />
+      icon: <Home size={20} />,
+      onClick: () => {
+        setActiveAnalyzer(null);
+        setShowTeam(false);
+      }
     },
     { 
       type: AnalysisType.TEXT, 
       label: 'Text Analysis', 
-      icon: <FileText size={20} /> 
+      icon: <FileText size={20} />,
+      onClick: () => setActiveAnalyzer(AnalysisType.TEXT)
     },
     { 
       type: AnalysisType.IMAGE, 
       label: 'Image Analysis', 
-      icon: <Image size={20} /> 
+      icon: <Image size={20} />,
+      onClick: () => setActiveAnalyzer(AnalysisType.IMAGE)
     },
     { 
       type: AnalysisType.AUDIO, 
       label: 'Audio Analysis', 
-      icon: <Radio size={20} /> 
+      icon: <Radio size={20} />,
+      onClick: () => setActiveAnalyzer(AnalysisType.AUDIO)
     },
     { 
       type: AnalysisType.DEEPFAKE, 
       label: 'Deepfake Detection', 
-      icon: <FileLock2 size={20} /> 
+      icon: <FileLock2 size={20} />,
+      onClick: () => setActiveAnalyzer(AnalysisType.DEEPFAKE)
     },
     { 
       type: AnalysisType.URL, 
       label: 'URL Analysis', 
-      icon: <Link2 size={20} /> 
+      icon: <Link2 size={20} />,
+      onClick: () => setActiveAnalyzer(AnalysisType.URL)
     },
+    {
+      type: 'team',
+      label: 'Our Team',
+      icon: <Users size={20} />,
+      onClick: () => {
+        setActiveAnalyzer(null, true);
+        setShowTeam(true);
+      }
+    }
   ];
 
   return (
@@ -104,10 +129,10 @@ const Sidebar: React.FC<SidebarProps> = ({
               {sidebarItems.map((item) => (
                 <button
                   key={item.type ?? 'home'}
-                  onClick={() => setActiveAnalyzer(item.type)}
+                  onClick={item.onClick}
                   className={cn(
                     "sidebar-item w-full",
-                    activeAnalyzer === item.type && "active",
+                    ((activeAnalyzer === item.type && !showTeam) || (item.type === 'team' && showTeam)) && "active",
                     !isSidebarOpen && "lg:justify-center lg:px-2"
                   )}
                 >
@@ -121,15 +146,18 @@ const Sidebar: React.FC<SidebarProps> = ({
           </div>
           
           <div className="p-4 border-t border-gray-800">
-            <div className={cn(
-              "flex items-center gap-2 text-red-400 px-3 py-2 rounded-lg hover:bg-gray-800 transition-colors",
-              !isSidebarOpen && "lg:justify-center"
-            )}>
+            <button
+              onClick={onEmergencySupport}
+              className={cn(
+                "w-full flex items-center gap-2 text-red-400 px-3 py-2 rounded-lg hover:bg-gray-800 transition-colors",
+                !isSidebarOpen && "lg:justify-center"
+              )}
+            >
               <AlertTriangle size={20} />
               <span className={cn("whitespace-nowrap", !isSidebarOpen && "lg:hidden")}>
                 Emergency Support
               </span>
-            </div>
+            </button>
           </div>
         </div>
       </motion.aside>

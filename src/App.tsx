@@ -1,16 +1,20 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { FileText, Image, Radio, FileLock2, Link2 } from 'lucide-react';
+import { FileText, Image, Radio, FileLock2, Link2, Users } from 'lucide-react';
 import Sidebar from './components/Sidebar';
 import TextAnalyzer from './components/analyzers/TextAnalyzer';
 import ImageAnalyzer from './components/analyzers/ImageAnalyzer';
 import AudioAnalyzer from './components/analyzers/AudioAnalyzer';
 import DeepfakeAnalyzer from './components/analyzers/DeepfakeAnalyzer';
 import UrlAnalyzer from './components/analyzers/UrlAnalyzer';
+import TeamPage from './components/TeamPage';
+import EmergencySupport from './components/EmergencySupport';
 import { AnalysisType } from './types';
 
-function App() {  
+function App() {
   const [activeAnalyzer, setActiveAnalyzer] = useState<AnalysisType | null>(null);
+  const [showTeam, setShowTeam] = useState(false);
+  const [showEmergencySupport, setShowEmergencySupport] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   
   const analyzerCards = [
@@ -46,7 +50,21 @@ function App() {
     },
   ];
 
-  const renderAnalyzer = () => {
+  const handleNavigate = (type: AnalysisType | null, showTeamPage = false) => {
+    setActiveAnalyzer(type);
+    setShowTeam(showTeamPage);
+    setShowEmergencySupport(false);
+  };
+
+  const renderContent = () => {
+    if (showEmergencySupport) {
+      return <EmergencySupport onClose={() => setShowEmergencySupport(false)} />;
+    }
+    
+    if (showTeam) {
+      return <TeamPage />;
+    }
+
     switch (activeAnalyzer) {
       case AnalysisType.TEXT:
         return <TextAnalyzer />;
@@ -77,7 +95,7 @@ function App() {
                 <motion.div
                   key={card.type}
                   className="bg-background-light p-6 rounded-xl border border-gray-800 hover:border-primary/50 cursor-pointer transition-all duration-200"
-                  onClick={() => setActiveAnalyzer(card.type)}
+                  onClick={() => handleNavigate(card.type)}
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                 >
@@ -87,6 +105,21 @@ function App() {
                 </motion.div>
               ))}
             </div>
+
+            <motion.div
+              className="mt-8 text-center"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.3 }}
+            >
+              <button
+                onClick={() => handleNavigate(null, true)}
+                className="inline-flex items-center gap-2 px-4 py-2 bg-primary/10 hover:bg-primary/20 rounded-lg transition-colors"
+              >
+                <Users size={20} />
+                Meet Our Team
+              </button>
+            </motion.div>
           </motion.div>
         );
     }
@@ -96,9 +129,16 @@ function App() {
     <div className="flex h-screen overflow-hidden">
       <Sidebar 
         activeAnalyzer={activeAnalyzer}
-        setActiveAnalyzer={setActiveAnalyzer}
+        setActiveAnalyzer={handleNavigate}
         isSidebarOpen={isSidebarOpen}
         setIsSidebarOpen={setIsSidebarOpen}
+        showTeam={showTeam}
+        setShowTeam={setShowTeam}
+        onEmergencySupport={() => {
+          setShowEmergencySupport(true);
+          setShowTeam(false);
+          setActiveAnalyzer(null);
+        }}
       />
       
       <motion.main 
@@ -107,8 +147,8 @@ function App() {
         animate={{ opacity: 1 }}
         transition={{ duration: 0.3 }}
       >
-        <div className="p-4 md:p-6 lg:p-8 max-w-5xl mx-auto">
-          {renderAnalyzer()}
+        <div className="p-4 md:p-6 lg:p-8 max-w-7xl mx-auto">
+          {renderContent()}
         </div>
       </motion.main>
     </div>
